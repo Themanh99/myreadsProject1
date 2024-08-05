@@ -1,12 +1,13 @@
 import React from 'react';
+import BookShelf from '../../Components/BookShelf';
 
-function HomePage(props) {
+const HomePage = (props) => {
     return (
-        <div className="books-container">
-            <div className="title-container">
+        <div className="list-books">
+            <div className="list-books-title">
                 <h1>MyReads</h1>
             </div>
-            {/* <BookShelf /> */}
+            <BookShelf />
         </div>
     );
 }

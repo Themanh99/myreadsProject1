@@ -1,14 +1,10 @@
-import { Route, Router } from "react-router-dom";
-import HomePage from "./Pages/HomePage";
-import SearchBook from "./Pages/SearchBook/SearchBook";
+import "./App.css";
 
 const App = () => {
-    <Router>
-      <div className="app">
-        <Route path="/" Component={HomePage}/>
-        <Route path="/search" Component={SearchBook}/>
-      </div>
-    </Router>
-}
+  return (
+    <div className="app">
+    </div>
+  );
+};
 
 export default App;
