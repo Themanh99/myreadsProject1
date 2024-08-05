@@ -9,21 +9,25 @@ import App from './App';
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <HomePage />,
+    path: '/',
+    element: <App />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        path: '/',
+        element: <HomePage />,
+      },
+      {
+        path: 'search',
+        element: <SearchBook />,
+      },
+    ],
   },
-  {
-    path: "/search",
-    element: <SearchBook />,
-    errorElement: <ErrorPage />,
-  },
-])
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />
-    <App />
   </React.StrictMode>,
 );

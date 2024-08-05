@@ -1,61 +1,64 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Book from "../../Components/Book";
-import { search, get, getAll, update } from "../../BooksAPI";
+import { search, update } from "../../BooksAPI";
 
-export const SearchBook = ({ location }) => {
-  const [books, setBooks] = useState([]);
-  const [searchResult, setSearchResult] = useState([]);
-  const [noBookFound, setNoBookFound] = useState(false);
+export const SearchBook = () => {
+  const [libraryBooks, setLibraryBooks] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [noResultsFound, setNoResultsFound] = useState(false);
+  const location = useLocation();
 
-  useEffect(() => {
-    const booksFromHome = location.state.booksFromHome;
-    setBooks(booksFromHome);
-  }, [location.state.booksFromHome]);
-
-  const handleSearchBooks = (e) => {
-    const searchInput = e.target.value;
-    if (searchInput) {
-      search(searchInput).then((resultBooks) => {
-        if (!resultBooks || resultBooks.hasOwnProperty("error")) {
-          setSearchResult([]);
-          setNoBookFound(true);
-        } else {
-          const updatedBooks = resultBooks.map((searchBook) => {
-            const bookFound = books.find((book) => book.id === searchBook.id);
-            if (bookFound) {
-              searchBook.shelf = bookFound.shelf;
-            } else {
-              searchBook.shelf = "none";
-            }
-            return searchBook;
-          });
-          setSearchResult(updatedBooks);
-          setNoBookFound(false);
-        }
-      });
-    } else {
-      setSearchResult([]);
+  const handleSearchInput = (e) => {
+    const query = e.target.value;
+    if (!query) {
+      setSearchResults(libraryBooks); // Display all books if search query is empty
+      setNoResultsFound(false);
+      return;
     }
-  };
 
-  const handleShelfChange = (book, shelf) => {
-    update(book, shelf).then((result) => {
-      book.shelf = shelf;
-      const updatedBooks = books.filter(
-        (resultBook) => resultBook.id !== book.id
-      );
-      updatedBooks.push(book);
-      setBooks(updatedBooks);
-      const updatedSearchResult = searchResult.map((searchBook) => {
-        if (searchBook.id === book.id) {
-          searchBook.shelf = shelf;
+    search(query).then((foundBooks) => {
+      if (!foundBooks || foundBooks.error) {
+        setSearchResults([]);
+        setNoResultsFound(true);
+        return;
+      }
+
+      const updatedResults = foundBooks.map((searchBook) => {
+        const matchedBook = libraryBooks.find((book) => book.id === searchBook.id);
+        if (matchedBook) {
+          searchBook.shelf = matchedBook.shelf;
+        } else {
+          searchBook.shelf = "none";
         }
         return searchBook;
       });
-      setSearchResult(updatedSearchResult);
+      setSearchResults(updatedResults);
+      setNoResultsFound(false);
     });
   };
+
+  const handleShelfUpdate = (book, newShelf) => {
+    update(book, newShelf).then(() => {
+      book.shelf = newShelf;
+      const updatedLibraryBooks = libraryBooks.filter((libraryBook) => libraryBook.id !== book.id).concat(book);
+      setLibraryBooks(updatedLibraryBooks);
+
+      const updatedSearchResults = searchResults.map((searchBook) => {
+        if (searchBook.id === book.id) {
+          searchBook.shelf = newShelf;
+        }
+        return searchBook;
+      });
+      setSearchResults(updatedSearchResults);
+    });
+  };
+
+  useEffect(() => {
+    const booksFromLibrary = location.state?.booksFromLibrary || [];
+    setLibraryBooks(booksFromLibrary);
+    setSearchResults(booksFromLibrary); // Set initial search results to all library books
+  }, [location.state]);
 
   return (
     <div className="search-books">
@@ -66,34 +69,34 @@ export const SearchBook = ({ location }) => {
         <div className="search-books-input-wrapper">
           <input
             type="text"
-            onChange={handleSearchBooks}
+            onChange={handleSearchInput}
             placeholder="Search by title or author"
           />
         </div>
       </div>
       <div className="search-books-results">
-        {searchResult.length > 0 && (
+        {searchResults.length > 0 && (
           <div>
             <div>
-              <h3>{searchResult.length} books found!</h3>
+              <h3>{searchResults.length} books found!</h3>
             </div>
             <ol className="books-grid">
-              {searchResult.map((book) => (
+              {searchResults.map((book) => (
                 <Book
                   key={book.id}
                   book={book}
-                  shelfChange={handleShelfChange}
+                  onShelfChange={handleShelfUpdate}
                 />
               ))}
             </ol>
           </div>
         )}
-        {noBookFound && (
+        {noResultsFound && (
           <div>
-            <h3>No book found. Please try again!</h3>
+            <h3>No books found. Try again!</h3>
           </div>
         )}
       </div>
     </div>
   );
-}
+};

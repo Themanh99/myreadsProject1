@@ -1,24 +1,20 @@
 import React from "react";
-import Book from "./Book";
 import PropTypes from "prop-types";
+import Book from "./Book";
 
-export default function Shelf(props) {
-  const { compartmentIndex, books, shelfChange } = props;
+export default function Shelf({ shelves, books, onShelfChange }) {
   return (
-    <div>
-      <div className="bookshelf-books" key={compartmentIndex}>
-        <ol className="books-grid">
-          {books.map((book) => (
-            <Book key={book.id} book={book} shelfChange={shelfChange} />
-          ))}
-        </ol>
-      </div>
+    <div className="bookshelf-books" key={shelves}>
+      <ol className="books-grid">
+        {books.map((book) => (
+          <Book key={book.id} book={book} onShelfChange={onShelfChange} />
+        ))}
+      </ol>
     </div>
   );
 }
 
-// PropTypes are used to make sure the datatype receive is valid
 Shelf.propTypes = {
   books: PropTypes.array.isRequired,
-  shelfChange: PropTypes.func.isRequired,
+  onShelfChange: PropTypes.func.isRequired,
 };

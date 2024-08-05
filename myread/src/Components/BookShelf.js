@@ -3,49 +3,46 @@ import * as BooksAPI from "../BooksAPI";
 import Shelf from "./Shelf";
 import { Link } from "react-router-dom";
 
+const shelves = [
+  { title: "Currently Reading", id: "currentlyReading" },
+  { title: "Want To Read", id: "wantToRead" },
+  { title: "Read", id: "read" },
+];
+
 export default function BookShelf() {
-  const [books, setBooks] = useState([]);
+  const [bookList, setBookList] = useState([]);
 
   useEffect(() => {
     BooksAPI.getAll().then((books) => {
-      setBooks(books);
+      setBookList(books);
     });
   }, []);
 
-  const handleShelfChange = (book, newShelf) => {
+  const updateShelf = (book, newShelf) => {
     BooksAPI.update(book, newShelf).then(() => {
       book.shelf = newShelf;
-      setBooks((prevBooks) =>
+      setBookList((prevBooks) =>
         prevBooks.filter((b) => b.id !== book.id).concat([book])
       );
     });
   };
 
-  //Self title
-  const compartments = [
-    { title: "Currently Reading", value: "currentlyReading" },
-    { title: "Want To Read", value: "wantToRead" },
-    { title: "Read", value: "read" },
-  ];
-
   return (
     <div>
-      {/* list books */}
       <div className="list-books-content">
-        {books.length > 0 && (
+        {bookList.length > 0 && (
           <div>
-            {compartments.map((compartment, index) => {
-              const compartmentBooks = books.filter(
-                (book) => book.shelf === compartment.value
+            {shelves.map((shelf, index) => {
+              const booksOnShelf = bookList.filter(
+                (book) => book.shelf === shelf.id
               );
               return (
                 <div className="bookshelf" key={index}>
-                  <h2 className="bookshelf-title">{compartment.title}</h2>
+                  <h2 className="bookshelf-title">{shelf.title}</h2>
                   <Shelf
-                    key={index}
-                    books={compartmentBooks}
-                    compartmentsList={compartments}
-                    shelfChange={handleShelfChange}
+                    books={booksOnShelf}
+                    shelves={shelves}
+                    onShelfChange={updateShelf}
                   />
                 </div>
               );
@@ -53,16 +50,17 @@ export default function BookShelf() {
           </div>
         )}
       </div>
-      {/* page search */}
       <div className="open-search">
         <Link
           to={{
             pathname: "/search",
             state: {
-              booksFromHome: books,
+              booksFromLibrary: bookList,
             },
           }}
-        />
+        >
+          Add a book
+        </Link>
       </div>
     </div>
   );
