@@ -1,6 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+const ACTION_LIST = [
+  { title: "Move to...", id: "moveTo" },
+  { title: "Currently Reading", id: "currentlyReading" },
+  { title: "Want To Read", id: "wantToRead" },
+  { title: "Read", id: "read" },
+  { title: "None", id: "none" },
+];
+
 export default function Book({ book, onShelfChange }) {
   const handleShelfChange = (event) => {
     onShelfChange(book, event.target.value);
@@ -30,15 +38,13 @@ export default function Book({ book, onShelfChange }) {
   const renderShelfChanger = (shelf) => (
     <div className="book-shelf-changer">
       <select onChange={handleShelfChange} value={shelf ? shelf : "none"}>
-        <option value="moveTo" disabled>
-          Move to...
-        </option>
-        <option value="currentlyReading">Currently Reading</option>
-        <option value="wantToRead">Want To Read</option>
-        <option value="read">Read</option>
-        <option value="none">None</option>
+        {
+          ACTION_LIST.map((item, index) =>
+            <option key={index} value={item.id} disabled={item.id === "moveTo"}>{item.title}</option>
+          )
+        }
       </select>
-    </div>
+    </div >
   );
 
   return (

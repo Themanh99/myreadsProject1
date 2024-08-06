@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Book from "../../Components/Book";
-import { search, update } from "../../BooksAPI";
+import { search, update, getAll } from "../../BooksAPI";
+import { debounce } from "../../Helpers";
 
 export const SearchBook = () => {
   const [libraryBooks, setLibraryBooks] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [noResultsFound, setNoResultsFound] = useState(false);
-  const location = useLocation();
+
+  // Call API search after 0.5s
+  const debouncedSearch = debounce(search, 500);
 
   const handleSearchInput = (e) => {
     const query = e.target.value;
@@ -17,7 +20,7 @@ export const SearchBook = () => {
       return;
     }
 
-    search(query).then((foundBooks) => {
+    debouncedSearch(query).then((foundBooks) => {
       if (!foundBooks || foundBooks.error) {
         setSearchResults([]);
         setNoResultsFound(true);
@@ -33,6 +36,7 @@ export const SearchBook = () => {
         }
         return searchBook;
       });
+
       setSearchResults(updatedResults);
       setNoResultsFound(false);
     });
@@ -41,7 +45,9 @@ export const SearchBook = () => {
   const handleShelfUpdate = (book, newShelf) => {
     update(book, newShelf).then(() => {
       book.shelf = newShelf;
-      const updatedLibraryBooks = libraryBooks.filter((libraryBook) => libraryBook.id !== book.id).concat(book);
+      const updatedLibraryBooks = libraryBooks
+        .filter((libraryBook) => libraryBook.id !== book.id)
+        .concat(book);
       setLibraryBooks(updatedLibraryBooks);
 
       const updatedSearchResults = searchResults.map((searchBook) => {
@@ -55,10 +61,11 @@ export const SearchBook = () => {
   };
 
   useEffect(() => {
-    const booksFromLibrary = location.state?.booksFromLibrary || [];
-    setLibraryBooks(booksFromLibrary);
-    setSearchResults(booksFromLibrary); // Set initial search results to all library books
-  }, [location.state]);
+    getAll().then((books) => {
+      setLibraryBooks(books);
+      setSearchResults(books); // Set initial search results to all library books
+    });
+  }, []);
 
   return (
     <div className="search-books">

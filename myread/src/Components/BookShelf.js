@@ -3,7 +3,7 @@ import * as BooksAPI from "../BooksAPI";
 import Shelf from "./Shelf";
 import { Link } from "react-router-dom";
 
-const shelves = [
+export const shelves = [
   { title: "Currently Reading", id: "currentlyReading" },
   { title: "Want To Read", id: "wantToRead" },
   { title: "Read", id: "read" },
